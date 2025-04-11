@@ -3,10 +3,11 @@ export CUDA_VISIBLE_DEVICES=0
 python -u run_anomaly.py \
   --is_training 1 \
   --root_path ./dataset/MSL/ \
-  --model_id MaelNetS2_AnomalyTransformer_DCDetector_RL_TA\
+  --model_id Model_Anomaly_Training\
   --model AnomalyTransformer \
-  --train_epochs 3 \
+  --train_epochs 1 \
   --data MSL \
+  --chunk_size 1024 \
   --e_layers 3 \
   --d_layers 1 \
   --anomaly_ratio 0.85 \
