@@ -20,9 +20,9 @@ warnings.filterwarnings('ignore')
 now = datetime.now()
 dt_string = now.strftime("%Y%m%d-%H%M%S")
 
-class Exp_Anomaly_Detection_Normal(Exp_Basic):
+class Exp_Anomaly_Detection(Exp_Basic):
     def __init__(self, args):
-        super(Exp_Anomaly_Detection_Normal, self).__init__(args)
+        super(Exp_Anomaly_Detection, self).__init__(args)
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
         if self.args.use_multi_gpu and self.args.use_gpu:
