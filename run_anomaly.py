@@ -1,12 +1,10 @@
 import argparse
 import torch
-from exp.exp_main_learner_Anomaly_Normal import Exp_Anomaly_Detection_Normal
-from exp.exp_main_learner_Anomaly_SL import Exp_Anomaly_Detection_SL
-from exp.opt_rl2_anomaly import OPT_RL_Anomaly
+from exp.exp_main_anomaly import Exp_Anomaly_Detection
 import random
 import numpy as np
 
-parser = argparse.ArgumentParser(description='MaelNet for Time Series Anomaly Detection with MANTRA')
+parser = argparse.ArgumentParser(description='MogTransformer for Time Series Anomaly Detection using Several Transformers')
 
 # basic config
 parser.add_argument('--is_training', type=int, default=1, help='status')
@@ -21,7 +19,7 @@ parser.add_argument('--result_dir', type=str, default='results', help='directory
 parser.add_argument('--data', type=str, default='MSL', help='dataset type')
 parser.add_argument('--root_path', type=str, default='./dataset/MSL/', help='root path of the data file')
 parser.add_argument('--win_size', type=int, default=100, help='window size')
-parser.add_argument('--chunk_size', type=str, default='500', help='Chunk size. Example: 500')
+parser.add_argument('--chunk_size', type=str, default='0', help='Chunk size. Example: 2048, 4096, 8192')
 
 parser.add_argument('--features', type=str, default='M',
                     help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
@@ -141,9 +139,7 @@ if args.use_gpu:
 
 if __name__ == "__main__":
 
-    Exp_Normal = Exp_Anomaly_Detection_Normal
-    Exp_SL = Exp_Anomaly_Detection_SL
-    OPT_RL = OPT_RL_Anomaly
+    Exp_Normal = Exp_Anomaly_Detection   
 
     args.patch_size = [int(patch_index) for patch_index in args.patch_size]
     print('Args in experiment:')
@@ -161,17 +157,14 @@ if __name__ == "__main__":
         args.factor,
         args.embed,
         args.distil)
-    exp_normal = Exp_Normal(args)  # set experiments
-    exp_sl = Exp_SL(args)
-    opt_rl = OPT_RL(args)
+    exp_normal = Exp_Normal(args)  # set experiments   
+    
     print("Setting: ", setting, "\n")
     if args.is_training:
-        print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
-        if args.is_slow_learner:
-            exp_sl.train(setting)
-        else:
-            exp_normal.train(setting)
+        print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))        
+        #exp_normal.train(setting)
     else:
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-        opt_rl.opt_anomaly(setting)
-        torch.cuda.empty_cache()
+        #exp_normal.test(setting)
+    
+    torch.cuda.empty_cache()
