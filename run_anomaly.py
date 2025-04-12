@@ -1,9 +1,13 @@
 import argparse
 import torch
 from exp.exp_main_anomaly import Exp_Anomaly_Detection
+from exp.exp_main_anomaly_SL import Exp_Anomaly_Detection_SL
 import random
 import numpy as np
 
+##############################
+##### Arguments Building #####
+##############################
 parser = argparse.ArgumentParser(description='MogTransformer for Time Series Anomaly Detection using Several Transformers')
 
 # basic config
@@ -52,7 +56,7 @@ parser.add_argument('--modes', type=int, default=32, help='modes to be selected 
 parser.add_argument('--L', type=int, default=3, help='ignore level')
 parser.add_argument('--base', type=str, default='legendre', help='mwt base')
 
-#Reinforcement Learning
+# Reinforcement Learning
 parser.add_argument('--use_weight',   action='store_true', default=False)
 parser.add_argument('--use_td',       action='store_false', default=True)
 parser.add_argument('--use_extra',    action='store_false', default=True)
@@ -60,18 +64,18 @@ parser.add_argument('--use_pretrain', action='store_false', default=True)
 parser.add_argument('--epsilon', default=0.5, type=float)
 parser.add_argument('--exp_name', default='rlmc', type=str)
 
-#TimesNet
+# TimesNet
 parser.add_argument('--top_k', type=int, default=5)
 
-#MANTRA
+# MANTRA
 parser.add_argument('--n_learner', type=int, default=3)
-parser.add_argument('--slow_model', type=str, default='MaelNetS2',
-                    help='model name, options: [MaelNet]')
+parser.add_argument('--slow_model', type=str, default='MaelNetS2', help='model name, options: [MaelNet]')
 parser.add_argument('--is_slow_learner', type=bool, default=False)
 
-#lOSS TYPE
+# lOSS TYPE
 parser.add_argument('--loss_type', type=str, default="neg_corr", help='loss type')
 parser.add_argument('--correlation_penalty', type=float, default=0.5, help='correlation penalty')
+
 # model define
 parser.add_argument('--kernel_size', type=int, default=3, help='kernel input size')
 parser.add_argument('--enc_in', type=int, default=25, help='encoder input size')
@@ -93,7 +97,6 @@ parser.add_argument('--embed', type=str, default='timeF',
 parser.add_argument('--activation', type=str, default='gelu', help='activation')
 # parser.add_argument('--output_attention', action='store_true', help='whether to output attention in encoder')
 parser.add_argument('--output_attention', default=True, action='store_true', help='whether to output attention in encoder')
-
 parser.add_argument('--do_predict', action='store_true', help='whether to predict unseen future data')
 
 # optimization
@@ -119,6 +122,10 @@ parser.add_argument('--seed', type=int, default=2021, help='random seed')
 parser.add_argument('--p_hidden_dims', type=int, nargs='+', default=[128, 128], help='hidden layer dimensions of projector (List)')
 parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
+
+######################
+#### Main Process ####
+######################
 args = parser.parse_args()
 
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
@@ -139,7 +146,8 @@ if args.use_gpu:
 
 if __name__ == "__main__":
 
-    Exp_Normal = Exp_Anomaly_Detection   
+    Exp_Normal = Exp_Anomaly_Detection
+    Exp_SL = Exp_Anomaly_Detection_SL
 
     args.patch_size = [int(patch_index) for patch_index in args.patch_size]
     print('Args in experiment:')
@@ -157,14 +165,20 @@ if __name__ == "__main__":
         args.factor,
         args.embed,
         args.distil)
-    exp_normal = Exp_Normal(args)  # set experiments   
+    exp_normal = Exp_Normal(args)  # set experiments
+    exp_sl = Exp_SL(args)  # set experiments
     
     print("Setting: ", setting, "\n")
     if args.is_training:
-        print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))        
-        #exp_normal.train(setting)
+        print('>>>>>>> Start Training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
+        if args.is_slow_learner:
+            print('\nStart Slow Learning')
+            exp_sl.train(setting)
+        else:
+            print('\nStart Normal Learning')
+            exp_normal.train(setting)
     else:
-        print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-        #exp_normal.test(setting)
+        print('>>>>>>> Start Testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+        exp_normal.test(setting)
     
     torch.cuda.empty_cache()

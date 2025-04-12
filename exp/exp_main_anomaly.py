@@ -114,25 +114,25 @@ class Exp_Anomaly_Detection(Exp_Basic):
 
                 if(self.model.name == "DCDetector"):
                     series, prior = self.model.forward(batch_x)
+                elif(self.model.name == "MaelNet"):
+                    outputs, series, prior = self.model.forward(batch_x)
                 else:
                     outputs, series, prior = self.model.forward(batch_x)
+
                 series_loss = 0.0
                 prior_loss = 0.0
 
                 for u in range(len(prior)):
-                    series_loss += (torch.mean(my_kl_loss(series[u], (
-                            prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
-                                                                                                self.args.win_size)).detach())) + torch.mean(
-                        my_kl_loss((prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
-                                                                                                        self.args.win_size)).detach(),
-                                series[u])))
-                    prior_loss += (torch.mean(my_kl_loss(
-                        (prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
-                                                                                                self.args.win_size)),
-                        series[u].detach())) + torch.mean(
-                        my_kl_loss(series[u].detach(), (
-                                prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
-                                                                                                    self.args.win_size)))))
+                    var_p = series[u]
+                    var_r = prior[u]
+                    var_s = torch.unsqueeze(torch.sum(var_r, dim=-1), dim=-1).repeat(1, 1, 1, self.args.win_size)
+                    var_q = var_r / var_s.detach()
+                    var_rs= var_r / var_s
+
+                    series_loss += torch.mean(my_kl_loss(var_p, var_q)) + torch.mean(my_kl_loss(var_q, var_p))
+                    prior_loss += torch.mean(my_kl_loss((var_rs), var_p.detach())) + torch.mean(my_kl_loss(var_p.detach(), (var_rs)))
+                
+
                 series_loss = series_loss / len(prior)
                 prior_loss = prior_loss / len(prior)
 
@@ -187,6 +187,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 epoch + 1, train_steps, train_normal_loss, vali_normal_loss1, test_normal_loss1))
             f.write("\n")
             csvreader.writerows(data_for_csv)
+
             # Saving Model
             if self.model.name == "DCDetector":
                 early_stopping(vali_normal_loss1, 0, self.model, path)

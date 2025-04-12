@@ -58,17 +58,18 @@ class MSLSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
+        chunk_size = int(chunk_size)
         self.chunk_size = chunk_size
 
         data = np.load(os.path.join(root_path, "MSL_train.npy"), allow_pickle=True)
         if (chunk_size != 0):  
-            data = data[:chunk_size, :]
+            data = data[:chunk_size]
 
         self.scaler.fit(data)
         data = self.scaler.transform(data)
         test_data = np.load(os.path.join(root_path, "MSL_test.npy"), allow_pickle=True)
         if (chunk_size != 0):  
-            test_data = test_data[:chunk_size, :]
+            test_data = test_data[:chunk_size]
 
         self.test = self.scaler.transform(test_data)
         self.train = data
@@ -76,7 +77,7 @@ class MSLSegLoader(Dataset):
         self.val = self.train[(int)(data_len * 0.8):]
         self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"))
         if (chunk_size != 0):  
-            self.test_labels = self.test_labels[:chunk_size, :]
+            self.test_labels = self.test_labels[:chunk_size]
 
     def __len__(self):
         if self.flag == "train":

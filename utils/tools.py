@@ -102,7 +102,7 @@ class EarlyStopping:
         self.slow_learner = slow_learner
         self.best_score = None
         self.early_stop = False
-        self.val_loss_min = np.Inf
+        self.val_loss_min = np.inf
         self.delta = delta
 
     def __call__(self, val_loss, model, path, save=True):
@@ -142,8 +142,8 @@ class EarlyStopping_Asso_Discrep:
         self.slow_learner = slow_learner
         self.best_score2 = None
         self.early_stop = False
-        self.val_loss_min = np.Inf
-        self.val_loss2_min = np.Inf
+        self.val_loss_min = np.inf
+        self.val_loss2_min = np.inf
         self.delta = delta
 
     def __call__(self, val_loss, val_loss2, model, path):
@@ -248,6 +248,9 @@ def adjustment(gt, pred):
 
 # Association Discrepancy
 def my_kl_loss(p, q):
+    print("p shape:", p.shape)
+    print("q shape:", q.shape)
+
     res = p * (torch.log(p + 0.0001) - torch.log(q + 0.0001))
     return torch.mean(torch.sum(res, dim=-1), dim=1)
 

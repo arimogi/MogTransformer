@@ -115,4 +115,9 @@ class Model(nn.Module):
         dec_out = dec_out * std_enc 
         dec_out = dec_out + means
 
-        return dec_out  # [B, L, D]
+        series, prior = self.encoder(enc_out)
+
+        if self.output_attention:
+            return enc_out, series, prior
+        else:
+            return dec_out  # [B, L, D]
