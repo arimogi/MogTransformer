@@ -5,7 +5,6 @@ from utils.slowloss import ssl_loss_v2
 import torch.multiprocessing
 from tqdm import tqdm
 from pprint import pprint
-torch.multiprocessing.set_sharing_strategy('file_system')
 import torch
 import torch.nn as nn
 from torch import optim
@@ -15,7 +14,9 @@ import warnings
 import numpy as np
 import csv
 from datetime import datetime
+
 warnings.filterwarnings('ignore')
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 now = datetime.now()
 dt_string = now.strftime("%Y%m%d-%H%M%S")
@@ -23,20 +24,25 @@ dt_string = now.strftime("%Y%m%d-%H%M%S")
 class Exp_Anomaly_Detection(Exp_Basic):
     def __init__(self, args):
         super(Exp_Anomaly_Detection, self).__init__(args)
+
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
         if self.args.use_multi_gpu and self.args.use_gpu:
             model = nn.DataParallel(model, device_ids=self.args.device_ids)
         return model
+    
     def _get_data(self, flag):
         data_set, data_loader = data_provider(self.args, flag)
         return data_set, data_loader
+    
     def _select_optimizer(self):
         model_optim = optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
         return model_optim
+    
     def _select_criterion(self):
         criterion = nn.MSELoss()
         return criterion
+    
     def vali(self, vali_loader,criterion, model_name):
         self.model.eval()
         loss_1 = []
@@ -48,8 +54,10 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 series, prior= self.model(batch_x)
             else:
                 outputs, series, prior= self.model(batch_x)
+
             series_loss = 0.0
             prior_loss = 0.0
+
             for u in range(len(prior)):
                 series_loss += (torch.mean(my_kl_loss(series[u], (
                         prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
@@ -58,6 +66,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
                         (prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
                                                                                                 self.args.win_size)).detach(),
                         series[u])))
+                
                 prior_loss += (torch.mean(
                     my_kl_loss((prior[u] / torch.unsqueeze(torch.sum(prior[u], dim=-1), dim=-1).repeat(1, 1, 1,
                                                                                                     self.args.win_size)),
@@ -71,6 +80,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
             if model_name == "DCDetector":
                 loss_1.append((prior_loss - series_loss).item())
                 continue
+
             rec_loss = criterion(outputs, batch_x)
             loss_1.append((rec_loss - self.args.k * series_loss).item())
             loss_2.append((rec_loss + self.args.k * prior_loss).item())
@@ -123,6 +133,13 @@ class Exp_Anomaly_Detection(Exp_Basic):
                     outputs, series, prior = self.model.forward(batch_x)
                 else:
                     outputs, series, prior = self.model.forward(batch_x)
+
+                print("Series and Prior shape: ")
+                print(series[0].shape)
+                print(prior[0].shape)
+                #print("Series and Prior length: ")
+                #print(len(series))
+                #print(len(prior))
 
                 series_loss = 0.0
                 prior_loss = 0.0

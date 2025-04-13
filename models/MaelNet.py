@@ -93,31 +93,36 @@ class Model(nn.Module):
     def forward(self, x_enc):
         x_raw = x_enc.clone().detach()
 
-        # Normalization dari NS_Transformer
-        means = x_enc.mean(1, keepdim=True).detach()  # B x 1 x E
-        x_enc = x_enc - means
-        std_enc = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
-        x_enc = x_enc / std_enc
+        enc_out = self.enc_embedding(x_raw,None)
+        enc_out, series, prior = self.encoder(enc_out)
+        enc_out = self.projection(enc_out)
 
-        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
-        delta = self.delta_learner(x_raw, means) # B x S x E, B x 1 x E -> B x S
-
-        # embedding
-        enc_out = self.enc_embedding(x_enc, None)
-        enc_out, attns = self.encoder(enc_out, tau=tau, delta=delta)
-
-        seasonal_init, trend_init = self.decomp(x_enc) #input dari decoder
-        dec_out = self.dec_embedding(seasonal_init, None)
-        seasonal_part, trend_part = self.decoder(x=dec_out, cross=enc_out, tau=tau, delta=None, trend=trend_init)
-
-        dec_out = seasonal_part + trend_part
-        #Denormalization dari NS_Transformer
-        dec_out = dec_out * std_enc 
-        dec_out = dec_out + means
-
-        series, prior = self.encoder(enc_out)
+#        # Normalization dari NS_Transformer
+#        means = x_enc.mean(1, keepdim=True).detach()  # B x 1 x E
+#        x_enc = x_enc - means
+#        std_enc = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
+#        x_enc = x_enc / std_enc
+#
+#        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
+#        delta = self.delta_learner(x_raw, means) # B x S x E, B x 1 x E -> B x S
+#
+#        # embedding
+#        enc_out = self.enc_embedding(x_enc, None)
+#        enc_out, attns = self.encoder(enc_out, tau=tau, delta=delta)
+#
+#        seasonal_init, trend_init = self.decomp(x_enc) #input dari decoder
+#        dec_out = self.dec_embedding(seasonal_init, None)
+#        seasonal_part, trend_part = self.decoder(x=dec_out, cross=enc_out, tau=tau, delta=None, trend=trend_init)
+#
+#        dec_out = seasonal_part + trend_part
+#        #Denormalization dari NS_Transformer
+#        dec_out = dec_out * std_enc 
+#        dec_out = dec_out + means
+#
+#        series, prior = self.encoder(enc_out)
 
         if self.output_attention:
             return enc_out, series, prior
         else:
-            return dec_out  # [B, L, D]
+            # return dec_out  # [B, L, D]
+            return enc_out

@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from layers.Attention import MaelAttention, MaelAttentionLayer
 from layers.Embed import DataEmbedding
-
 
 class EncoderLayer(nn.Module):
     def __init__(self, attention, d_model, d_ff=None, dropout=0.1, activation="relu"):
@@ -30,7 +28,6 @@ class EncoderLayer(nn.Module):
 
         return self.norm2(x + y), attn, mask
 
-
 class Encoder(nn.Module):
     def __init__(self, attn_layers, norm_layer=None):
         super(Encoder, self).__init__()
@@ -49,7 +46,6 @@ class Encoder(nn.Module):
             x = self.norm(x)
 
         return x, series_list, prior_list
-
 
 class Model(nn.Module):
     def __init__(self, configs, output_attention=True):

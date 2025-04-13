@@ -2,6 +2,7 @@ import argparse
 import torch
 from exp.exp_main_anomaly import Exp_Anomaly_Detection
 from exp.exp_main_anomaly_SL import Exp_Anomaly_Detection_SL
+from exp.exp_frnet import Exp_FRNet_Detection
 import random
 import numpy as np
 
@@ -148,6 +149,7 @@ if __name__ == "__main__":
 
     Exp_Normal = Exp_Anomaly_Detection
     Exp_SL = Exp_Anomaly_Detection_SL
+    Exp_FRNet = Exp_FRNet_Detection
 
     args.patch_size = [int(patch_index) for patch_index in args.patch_size]
     print('Args in experiment:')
@@ -165,8 +167,10 @@ if __name__ == "__main__":
         args.factor,
         args.embed,
         args.distil)
+    
     exp_normal = Exp_Normal(args)  # set experiments
     exp_sl = Exp_SL(args)  # set experiments
+    exp_frnet = Exp_FRNet(args)
     
     print("Setting: ", setting, "\n")
     if args.is_training:
