@@ -95,6 +95,11 @@ class Exp_Anomaly_Detection(Exp_Basic):
         criterion = self._select_criterion()
 
         result_dir = self.args.result_dir
+        if not os.path.exists(result_dir):
+            os.makedirs(result_dir)
+            print("Folder created!\n")
+        else:
+            print("Folder already exists.\n")
         csv_fname = result_dir + "/training_anomaly_detection_asso_discrep_normal"+ dt_string +".csv"
         txt_fname = result_dir + "/training_anomaly_detection_asso_discrep_normal"+ dt_string +".txt"
         f = open(txt_fname, 'a')
