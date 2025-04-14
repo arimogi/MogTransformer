@@ -9,7 +9,6 @@ import numpy as np
 from layers.RevIN import RevIN
 from layers.PatchTST_layers import series_decomp
 
-
 class Model(nn.Module):
     def __init__(self, configs):
         super(Model, self).__init__()
