@@ -197,6 +197,8 @@ if __name__ == "__main__":
         if args.is_slow_learner:
             print('\nStart Slow Learning')
             exp_sl.train(setting)
+        elif (args.model == "FRNet"):
+            exp_frnet.train(setting) 
         else:
             print('\nStart Normal Learning')
             exp_normal.train(setting)
