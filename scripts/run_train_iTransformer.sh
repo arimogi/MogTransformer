@@ -19,7 +19,7 @@ if [ ! -d "./logs/LongForecasting" ]; then
     mkdir ./logs/LongForecasting
 fi
 seq_len=512
-model_name=FRNet
+model_name=iTransformer
 
 root_path_name=./dataset/ETT-small
 data_path_name=ETTh1.csv
