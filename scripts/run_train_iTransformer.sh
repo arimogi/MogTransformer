@@ -26,6 +26,7 @@ data_path_name=ETTh1.csv
 model_id_name=ETTh1
 data_name=ETTh1
 random_seed=$var_time
+file_name=./results/log-$current_time.log
 
 python -u run_anomaly.py \
   --use_gpu True \
@@ -80,8 +81,8 @@ python -u run_anomaly.py \
   --result_dir ./results/ \
   --batch_size 128 \
   --learning_rate 0.0003 \
-  --itr 1 >> $file_name \
-  --is_training 1 \
+  --itr 1 \
+  --is_training 1 >> $file_name
     
      
 
