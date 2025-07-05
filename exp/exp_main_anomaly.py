@@ -158,7 +158,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 series_loss = series_loss / len(prior)
                 prior_loss = prior_loss / len(prior)
 
-                if(self.model.name == "DCDetector"):
+                if(self.args.model == "DCDetector"):
                     loss = prior_loss - series_loss #loss 0 
                     if (i + 1) % 100 == 0:
                         print("\titers FAST LEARNER {0}: {1}, epoch: {2} | loss phase: {3:.7f}".format(self.model.name,i + 1, epoch + 1, loss.item()))
@@ -191,12 +191,12 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 model_optim.step()
 
             train_normal_loss = np.average(train_loss)
-            if self.model.name == "DCDetector":
-                vali_normal_loss1 = self.vali(vali_loader, criterion, self.model.name)
-                test_normal_loss1 = self.vali(test_loader, criterion, self.model.name)
+            if self.args.model == "DCDetector":
+                vali_normal_loss1 = self.vali(vali_loader, criterion, self.args.model)
+                test_normal_loss1 = self.vali(test_loader, criterion, self.args.model)
             else:
-                vali_normal_loss1, vali_normal_loss2 = self.vali(vali_loader, criterion, self.model.name)
-                test_normal_loss1, test_normal_loss2 = self.vali(test_loader, criterion, self.model.name)
+                vali_normal_loss1, vali_normal_loss2 = self.vali(vali_loader, criterion, self.args.model)
+                test_normal_loss1, test_normal_loss2 = self.vali(test_loader, criterion, self.args.model)
 
             if epoch == 0:
                 f.write(setting + "  \n")
@@ -211,7 +211,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
             csvreader.writerows(data_for_csv)
 
             # Saving Model
-            if self.model.name == "DCDetector":
+            if self.args.model == "DCDetector":
                 early_stopping(vali_normal_loss1, 0, self.model, path)
             else:
                 early_stopping(vali_normal_loss1, vali_normal_loss2, self.model, path)
@@ -220,5 +220,5 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 break
             adjust_learning_rate(model_optim, epoch + 1, self.args)
         csvreader.writerow([])
-        print(f"Train is finished for normal model {self.model.name}")
+        print(f"Train is finished for normal model {self.args.model}")
         return
