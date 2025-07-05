@@ -42,4 +42,5 @@ python -u run_anomaly.py \
   --p_hidden_dims 128 128 \
   --p_hidden_layers 2 \
   --result_dir ./results/ \
+  --run_chunk True \
   --itr 1 >> $log_file
