@@ -53,31 +53,51 @@ class PSMSegLoader(Dataset):
 
 
 class MSLSegLoader(Dataset):
-    def __init__(self, root_path, win_size, step=1, flag="train", chunk_size=0):
+    def __init__(self, root_path, win_size, run_chunk, step=1, flag="train", chunk_size=0):
         self.flag = flag
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
         chunk_size = int(chunk_size)
         self.chunk_size = chunk_size
+        self.run_chunk = run_chunk
 
-        data = np.load(os.path.join(root_path, "MSL_train.npy"), allow_pickle=True)
-        if (chunk_size != 0):  
-            data = data[:chunk_size]
+        if (run_chunk == False):
+            data = np.load(os.path.join(root_path, "MSL_train.npy"), allow_pickle=True)
+            if (chunk_size != 0):  
+                data = data[:chunk_size]
 
-        self.scaler.fit(data)
-        data = self.scaler.transform(data)
-        test_data = np.load(os.path.join(root_path, "MSL_test.npy"), allow_pickle=True)
-        if (chunk_size != 0):  
-            test_data = test_data[:chunk_size]
+            self.scaler.fit(data)
+            data = self.scaler.transform(data)
+            test_data = np.load(os.path.join(root_path, "MSL_test.npy"), allow_pickle=True)
+            if (chunk_size != 0):  
+                test_data = test_data[:chunk_size]
 
-        self.test = self.scaler.transform(test_data)
-        self.train = data
-        data_len = len(self.train)
-        self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"))
-        if (chunk_size != 0):  
-            self.test_labels = self.test_labels[:chunk_size]
+            self.test = self.scaler.transform(test_data)
+            self.train = data
+            data_len = len(self.train)
+            self.val = self.train[(int)(data_len * 0.8):]
+            self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"))
+            if (chunk_size != 0):  
+                self.test_labels = self.test_labels[:chunk_size]
+        else:
+            data = np.load(os.path.join(root_path, "MSL_train-1000.npy"), allow_pickle=True)
+            if (chunk_size != 0):  
+                data = data[:chunk_size]
+
+            self.scaler.fit(data)
+            data = self.scaler.transform(data)
+            test_data = np.load(os.path.join(root_path, "MSL_test-1000.npy"), allow_pickle=True)
+            if (chunk_size != 0):  
+                test_data = test_data[:chunk_size]
+
+            self.test = self.scaler.transform(test_data)
+            self.train = data
+            data_len = len(self.train)
+            self.val = self.train[(int)(data_len * 0.8):]
+            self.test_labels = np.load(os.path.join(root_path, "MSL_test_label-1000.npy"))
+            if (chunk_size != 0):  
+                self.test_labels = self.test_labels[:chunk_size]
 
     def __len__(self):
         if self.flag == "train":

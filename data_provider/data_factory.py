@@ -19,6 +19,7 @@ def data_provider(args, flag):
         win_size=args.win_size,
         flag=flag,
         chunk_size=args.chunk_size,
+        run_chunk=args.run_chunk,
     )
     print(f"Data: {data_set}")
     print(flag, len(data_set))
