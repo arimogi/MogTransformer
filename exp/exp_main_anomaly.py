@@ -127,9 +127,9 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 iter_count = iter_count + 1
                 model_optim.zero_grad() 
 
-                if(self.model.name == "DCDetector"):
+                if(self.args.model == "DCDetector"):
                     series, prior = self.model.forward(batch_x)
-                elif(self.model.name == "MaelNet"):
+                elif(self.args.model == "MaelNet"):
                     outputs, series, prior = self.model.forward(batch_x)
                 else:
                     outputs, series, prior = self.model.forward(batch_x)
