@@ -63,7 +63,8 @@ parser.add_argument('--use_td',       action='store_false', default=True)
 parser.add_argument('--use_extra',    action='store_false', default=True)
 parser.add_argument('--use_pretrain', action='store_false', default=True)
 parser.add_argument('--epsilon', default=0.5, type=float)
-parser.add_argument('--exp_name', default='rlmc', type=str)
+# parser.add_argument('--exp_name', default='rlmc', type=str)
+parser.add_argument('--exp_name', type=str, required=False, default='MTSF', help='experiemnt name, options:[MTSF, partial_train]')
 
 # TimesNet
 parser.add_argument('--top_k', type=int, default=5)
@@ -142,6 +143,19 @@ parser.add_argument('--seed', type=int, default=2021, help='random seed')
 parser.add_argument('--p_hidden_dims', type=int, nargs='+', default=[128, 128], help='hidden layer dimensions of projector (List)')
 parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
+# iTransformer
+parser.add_argument('--channel_independence', type=bool, default=False, help='whether to use channel_independence mechanism')
+parser.add_argument('--inverse', action='store_true', help='inverse output data', default=False)
+parser.add_argument('--class_strategy', type=str, default='projection', help='projection/average/cls_token')
+parser.add_argument('--target_root_path', type=str, default='./data/electricity/', help='root path of the data file')
+parser.add_argument('--target_data_path', type=str, default='electricity.csv', help='data file')
+parser.add_argument('--efficient_training', type=bool, default=False, help='whether to use efficient_training (exp_name should be partial train)') # See Figure 8 of our paper for the detail
+parser.add_argument('--use_norm', type=int, default=True, help='use norm and denorm')
+parser.add_argument('--partial_start_index', type=int, default=0, help='the start index of variates for partial training, '
+                                                                        'you can select [partial_start_index, min(enc_in + partial_start_index, N)]')
+parser.add_argument('--random_seed', type=int, default=512, help='number of random seed')
+
+parser.add_argument('--run_chunk', type=bool, default=False, help='run chunk of dataset, set TRUE if only for testing script.')
 
 ######################
 #### Main Process ####
