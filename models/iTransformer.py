@@ -71,6 +71,11 @@ class Model(nn.Module):
         return dec_out
 
 
-    def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
+    def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None):
+        # If in anomaly detection mode, ignore time markers
+        if x_mark_enc is None:
+            # anomaly mode
+            return self.encoder_only_forward(x_enc)
+        # otherwise, do full forecasting mode
         dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
         return dec_out[:, -self.pred_len:, :]  # [B, L, D]
