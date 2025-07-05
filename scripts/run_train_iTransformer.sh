@@ -29,7 +29,7 @@ python -u run_anomaly.py \
   --enc_in 55 \
   --dec_in 55 \
   --c_out 55 \
-  --d_model 512 \
+  --d_model 55 \
   --e_layers 3 \
   --d_layers 1 \
   --factor 5 \
