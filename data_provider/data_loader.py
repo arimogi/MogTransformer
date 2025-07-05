@@ -77,7 +77,7 @@ class MSLSegLoader(Dataset):
             self.train = data
             data_len = len(self.train)
             self.val = self.train[(int)(data_len * 0.8):]
-            self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"))
+            self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"), allow_pickle=True)
             if (chunk_size != 0):  
                 self.test_labels = self.test_labels[:chunk_size]
         else:
@@ -95,7 +95,7 @@ class MSLSegLoader(Dataset):
             self.train = data
             data_len = len(self.train)
             self.val = self.train[(int)(data_len * 0.8):]
-            self.test_labels = np.load(os.path.join(root_path, "MSL_test_label-1000.npy"))
+            self.test_labels = np.load(os.path.join(root_path, "MSL_test_label-1000.npy"), allow_pickle=True)
             if (chunk_size != 0):  
                 self.test_labels = self.test_labels[:chunk_size]
 
@@ -130,15 +130,15 @@ class SMAPSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = np.load(os.path.join(root_path, "SMAP_train.npy"))
+        data = np.load(os.path.join(root_path, "SMAP_train.npy"), allow_pickle=True)
         self.scaler.fit(data)
         data = self.scaler.transform(data)
-        test_data = np.load(os.path.join(root_path, "SMAP_test.npy"))
+        test_data = np.load(os.path.join(root_path, "SMAP_test.npy"), allow_pickle=True)
         self.test = self.scaler.transform(test_data)
         self.train = data
         data_len = len(self.train)
         self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = np.load(os.path.join(root_path, "SMAP_test_label.npy"))
+        self.test_labels = np.load(os.path.join(root_path, "SMAP_test_label.npy"), allow_pickle=True)
 
     def __len__(self):
 
@@ -172,15 +172,15 @@ class SMDSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = np.load(os.path.join(root_path, "SMD_train.npy"))
+        data = np.load(os.path.join(root_path, "SMD_train.npy"), allow_pickle=True)
         self.scaler.fit(data)
         data = self.scaler.transform(data)
-        test_data = np.load(os.path.join(root_path, "SMD_test.npy"))
+        test_data = np.load(os.path.join(root_path, "SMD_test.npy"), allow_pickle=True)
         self.test = self.scaler.transform(test_data)
         self.train = data
         data_len = len(self.train)
         self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = np.load(os.path.join(root_path, "SMD_test_label.npy"))
+        self.test_labels = np.load(os.path.join(root_path, "SMD_test_label.npy"), allow_pickle=True)
 
     def __len__(self):
         if self.flag == "train":

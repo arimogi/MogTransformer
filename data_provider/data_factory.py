@@ -23,7 +23,7 @@ def data_provider(args, flag):
     )
     print(f"Data: {data_set}")
     print(flag, len(data_set))
-    print(f"Percentage of anomaly {(data_set.test_labels.sum()/len(data_set.test_labels) * 100).astype(float):0.2f}%")
+    print(f"Percentage of anomaly {(data_set.test_labels.sum()/len(data_set.test_labels) * 100):0.2f}%")
     data_loader = DataLoader(
         data_set,
         batch_size=batch_size,
