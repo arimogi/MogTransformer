@@ -70,6 +70,16 @@ class Model(nn.Module):
 
         return dec_out
 
+    def encoder_only_forward(self, x_enc):
+        # x_enc shape: [batch, seq_len, channels]
+        enc_out, attns = self.encoder(x_enc, attn_mask=None)
+        
+        # You may define what series and prior mean for iTransformer
+        # We'll use dummy values (None or placeholders)
+        series = attns[0] if attns else None
+        prior = torch.zeros_like(x_enc)
+
+        return enc_out, series, prior
 
     def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None):
         # If in anomaly detection mode, ignore time markers
