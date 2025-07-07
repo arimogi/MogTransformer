@@ -48,5 +48,4 @@ class Exp_Basic(object):
         pass
 
     def test(self, setting):
-        print(f"Testing with setting: {setting}")
         pass
