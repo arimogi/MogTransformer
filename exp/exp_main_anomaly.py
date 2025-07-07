@@ -14,6 +14,8 @@ import warnings
 import numpy as np
 import csv
 from datetime import datetime
+import matplotlib.pyplot as plt
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 warnings.filterwarnings('ignore')
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -222,3 +224,78 @@ class Exp_Anomaly_Detection(Exp_Basic):
         csvreader.writerow([])
         print(f"Train is finished for normal model {self.args.model}")
         return
+    
+    def test(self, setting):
+        print(f"Testing with setting: {setting}")
+
+        self.model.eval()
+        test_data, test_loader = self._get_data(flag='test')
+
+        preds = []
+        trues = []
+
+        for i, (batch_x, batch_y, _, _) in enumerate(test_loader):
+            batch_x = batch_x.float().to(self.device)
+            batch_y = batch_y.float().to(self.device)
+
+            with torch.no_grad():
+                outputs = self.model(batch_x)
+
+            # Post-processing
+            output = outputs.detach().cpu().numpy()
+            truth = batch_y.detach().cpu().numpy()
+
+            preds.append(output)
+            trues.append(truth)
+
+        preds = np.concatenate(preds, axis=0)
+        trues = np.concatenate(trues, axis=0)
+
+        # Binarize predictions for evaluation (assuming thresholding is needed)
+        # Example: threshold based on reconstruction error
+        errors = np.mean((preds - trues) ** 2, axis=1)
+        threshold = np.percentile(errors, 100 * (1 - self.args.anomaly_ratio))
+        binary_preds = (errors > threshold).astype(int)
+        binary_trues = (np.mean((trues - np.mean(trues, axis=0))**2, axis=1) > threshold).astype(int)
+
+        precision = precision_score(binary_trues, binary_preds)
+        recall = recall_score(binary_trues, binary_preds)
+        f1 = f1_score(binary_trues, binary_preds)
+
+        print(f"Precision: {precision:.4f}")
+        print(f"Recall:    {recall:.4f}")
+        print(f"F1-score:  {f1:.4f}")
+
+        # Save results to CSV
+        import pandas as pd
+        metrics = {
+            "Setting": [setting],
+            "Precision": [precision],
+            "Recall": [recall],
+            "F1-Score": [f1]
+        }
+        df = pd.DataFrame(metrics)
+        os.makedirs('./results/metrics', exist_ok=True)
+        df.to_csv(f'./results/metrics/metrics_{setting}.csv', index=False)
+        # Append to comparison CSV
+        all_metrics_file = './results/metrics/all_metrics.csv'
+        if os.path.exists(all_metrics_file):
+            df_all = pd.read_csv(all_metrics_file)
+            df_all = pd.concat([df_all, df], ignore_index=True)
+        else:
+            df_all = df
+        df_all.to_csv(all_metrics_file, index=False)
+        print(f"Appended metrics to {all_metrics_file}")
+        print(f"Saved metrics to ./results/metrics/metrics_{setting}.csv")
+
+        # Plot
+        plt.figure(figsize=(12, 4))
+        plt.plot(binary_trues, label='Ground Truth', alpha=0.7)
+        plt.plot(binary_preds, label='Predicted Anomalies', alpha=0.7)
+        plt.title("Anomaly Detection Results")
+        plt.xlabel("Time Step")
+        plt.ylabel("Anomaly (1=True, 0=Normal)")
+        plt.legend()
+        os.makedirs('./results/plots', exist_ok=True)
+        plt.savefig(f'./results/plots/test_plot_{setting}.png')
+        plt.close()
