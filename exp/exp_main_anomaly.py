@@ -234,7 +234,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
         preds = []
         trues = []
 
-        for i, (batch_x, batch_y, _, _) in enumerate(test_loader):
+        for i, (batch_x, batch_y) in enumerate(test_loader):
             batch_x = batch_x.float().to(self.device)
             batch_y = batch_y.float().to(self.device)
 
@@ -242,7 +242,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
                 outputs = self.model(batch_x)
 
             # Post-processing
-            output = outputs.detach().cpu().numpy()
+            output = outputs[0].detach().cpu().numpy()
             truth = batch_y.detach().cpu().numpy()
 
             preds.append(output)
@@ -251,6 +251,15 @@ class Exp_Anomaly_Detection(Exp_Basic):
         preds = np.concatenate(preds, axis=0)
         trues = np.concatenate(trues, axis=0)
 
+        # Fix shape mismatch
+        if preds.shape != trues.shape:
+            if trues.ndim == 2:
+                # Expand last dimension: (901, 100) -> (901, 100, 1)
+                trues = np.expand_dims(trues, axis=-1)
+            if trues.shape[-1] == 1 and preds.shape[-1] > 1:
+                # Repeat last dimension to match number of features (e.g., 55)
+                trues = np.repeat(trues, preds.shape[-1], axis=-1)
+
         # Binarize predictions for evaluation (assuming thresholding is needed)
         # Example: threshold based on reconstruction error
         errors = np.mean((preds - trues) ** 2, axis=1)
@@ -258,9 +267,9 @@ class Exp_Anomaly_Detection(Exp_Basic):
         binary_preds = (errors > threshold).astype(int)
         binary_trues = (np.mean((trues - np.mean(trues, axis=0))**2, axis=1) > threshold).astype(int)
 
-        precision = precision_score(binary_trues, binary_preds)
-        recall = recall_score(binary_trues, binary_preds)
-        f1 = f1_score(binary_trues, binary_preds)
+        precision = precision_score(binary_trues, binary_preds, average='macro')
+        recall = recall_score(binary_trues, binary_preds, average='macro')
+        f1 = f1_score(binary_trues, binary_preds, average='macro')
 
         print(f"Precision: {precision:.4f}")
         print(f"Recall:    {recall:.4f}")
